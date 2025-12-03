@@ -1,0 +1,16 @@
+## Prompt to generate 5 lottery tickets
+
+Use this prompt in Cursor when you want 5 suggested tickets based on the current history in `data/history.json`:
+
+```text
+Please read the lottery history from `data/history.json`.
+The game rules are: each draw and each ticket has 7 distinct integers between 1 and 28 inclusive, no bonus numbers.
+
+1. Parse and validate all draws in `data/history.json`. If there are issues, describe them.
+2. Summarize the history: total draws, frequency of each number 1–28, and how long it has been since each number last appeared.
+3. Based on this analysis, generate **5 suggested tickets**, each containing **7 distinct numbers between 1 and 28**.
+4. Follow the heuristic strategy from the project rules: mix “hot” (frequent) and “cold/overdue” numbers, avoid nearly identical tickets, and balance low (1–9), mid (10–19), and high (20–28) ranges when reasonable.
+5. For each ticket, output a line like `Game X: [n1, n2, n3, n4, n5, n6, n7]` followed by a brief explanation of why you chose those numbers (which are hot, which are overdue, and any patterns).
+6. End with a clear disclaimer that lottery outcomes are random and these tickets are only heuristic suggestions based on past data.
+```
+
