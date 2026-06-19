@@ -77,6 +77,68 @@ export const GAMES: Record<Game, GameConfig> = {
 
 export const GAME_LIST = Object.values(GAMES);
 
+/** Loto et Loto+ partagent le même tirage (mercredi & samedi). */
+export const LOTO_FAMILY_GAMES: Game[] = ["LOTO", "LOTO_PLUS"];
+
+export type DrawFilter = "LOTO_VERT" | "LOTO_FAMILY";
+
+export const DRAW_FILTER_OPTIONS: {
+  value: DrawFilter;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "LOTO_VERT",
+    label: "Loto Vert",
+    description: "7 numéros · Mar & Ven",
+  },
+  {
+    value: "LOTO_FAMILY",
+    label: "Loto & Loto+",
+    description: "Même tirage · Mer & Sam",
+  },
+];
+
+export function parseDrawFilter(value?: string): DrawFilter | undefined {
+  if (!value) return undefined;
+  if (value === "LOTO_VERT") return "LOTO_VERT";
+  if (value === "LOTO_FAMILY" || value === "LOTO" || value === "LOTO_PLUS") {
+    return "LOTO_FAMILY";
+  }
+  return undefined;
+}
+
+export function getDrawFilterLabel(filter?: DrawFilter): string {
+  if (!filter) return "";
+  return DRAW_FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? "";
+}
+
+export function isLotoFamilyGame(game: Game): boolean {
+  return LOTO_FAMILY_GAMES.includes(game);
+}
+
+export function getDrawGroupLabel(game: Game): string {
+  if (game === "LOTO_VERT") return GAMES.LOTO_VERT.shortName;
+  return "Loto / Loto+";
+}
+
+type DrawLike = { game: Game; date: Date };
+
+/** Garde un seul tirage par date pour la famille Loto (préfère LOTO). */
+export function deduplicateLotoFamilyDraws<T extends DrawLike>(draws: T[]): T[] {
+  const byDate = new Map<string, T>();
+  for (const draw of draws) {
+    const key = draw.date.toISOString().split("T")[0];
+    const existing = byDate.get(key);
+    if (!existing || draw.game === "LOTO") {
+      byDate.set(key, draw);
+    }
+  }
+  return [...byDate.values()].sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+  );
+}
+
 export function getGameConfig(game: Game): GameConfig {
   return GAMES[game];
 }

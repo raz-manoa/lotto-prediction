@@ -2,10 +2,9 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Select } from "@/components/ui/select";
-import { GAME_LIST } from "@/lib/games";
-import { Game } from "@prisma/client";
+import { DRAW_FILTER_OPTIONS, parseDrawFilter, type DrawFilter } from "@/lib/games";
 
-export function DrawsFilter({ currentGame }: { currentGame?: Game }) {
+export function DrawsFilter({ currentFilter }: { currentFilter?: DrawFilter }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,16 +21,23 @@ export function DrawsFilter({ currentGame }: { currentGame?: Game }) {
 
   return (
     <Select
-      value={currentGame ?? ""}
+      value={currentFilter ?? ""}
       onChange={handleChange}
       className="w-full sm:max-w-xs"
     >
       <option value="">Tous les jeux</option>
-      {GAME_LIST.map((g) => (
-        <option key={g.id} value={g.id}>
-          {g.name}
+      {DRAW_FILTER_OPTIONS.map((g) => (
+        <option key={g.value} value={g.value}>
+          {g.label}
         </option>
       ))}
     </Select>
   );
+}
+
+/** Normalise l'ancien param game=LOTO ou LOTO_PLUS vers LOTO_FAMILY */
+export function normalizeDrawFilterFromParams(
+  game?: string
+): DrawFilter | undefined {
+  return parseDrawFilter(game);
 }

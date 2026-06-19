@@ -3,13 +3,66 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Game } from "@prisma/client";
-import { validateNumbers, getDayFromDate } from "@/lib/games";
+import {
+  validateNumbers,
+  getDayFromDate,
+  deduplicateLotoFamilyDraws,
+  type DrawFilter,
+} from "@/lib/games";
 import { parseBulkDrawInput } from "@/lib/analysis";
 import { revalidatePath } from "next/cache";
 
+export type DrawStatGroup = {
+  id: DrawFilter;
+  draws: Awaited<ReturnType<typeof prisma.draw.findMany>>;
+};
+
+export async function getDrawsForPage(filter?: DrawFilter) {
+  const all = await prisma.draw.findMany({ orderBy: { date: "desc" } });
+
+  const lotoVertDraws = all.filter((d) => d.game === "LOTO_VERT");
+  const lotoFamilyDraws = deduplicateLotoFamilyDraws(
+    all.filter((d) => d.game === "LOTO" || d.game === "LOTO_PLUS")
+  );
+
+  let draws: typeof all;
+  let statGroups: DrawStatGroup[];
+
+  if (filter === "LOTO_VERT") {
+    draws = lotoVertDraws;
+    statGroups = [{ id: "LOTO_VERT", draws: lotoVertDraws }];
+  } else if (filter === "LOTO_FAMILY") {
+    draws = lotoFamilyDraws;
+    statGroups = [{ id: "LOTO_FAMILY", draws: lotoFamilyDraws }];
+  } else {
+    draws = [...lotoVertDraws, ...lotoFamilyDraws].sort(
+      (a, b) => b.date.getTime() - a.date.getTime()
+    );
+    statGroups = [
+      { id: "LOTO_VERT", draws: lotoVertDraws },
+      { id: "LOTO_FAMILY", draws: lotoFamilyDraws },
+    ];
+  }
+
+  return { draws, statGroups };
+}
+
 export async function getDraws(game?: Game) {
+  if (!game) {
+    const { draws } = await getDrawsForPage();
+    return draws;
+  }
+
+  if (game === "LOTO" || game === "LOTO_PLUS") {
+    const draws = await prisma.draw.findMany({
+      where: { game: { in: ["LOTO", "LOTO_PLUS"] } },
+      orderBy: { date: "desc" },
+    });
+    return deduplicateLotoFamilyDraws(draws);
+  }
+
   return prisma.draw.findMany({
-    where: game ? { game } : undefined,
+    where: { game },
     orderBy: { date: "desc" },
   });
 }
