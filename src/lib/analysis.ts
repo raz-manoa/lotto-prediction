@@ -27,6 +27,11 @@ export type RangeDistribution = {
   numbers: number[];
 };
 
+export type AvgRangeDistribution = {
+  label: string;
+  avgPerDraw: number;
+};
+
 export type DrawAnalysis = {
   totalDraws: number;
   frequencies: FrequencyEntry[];
@@ -35,6 +40,7 @@ export type DrawAnalysis = {
   coldNumbers: number[];
   overdueNumbers: number[];
   rangeDistribution: RangeDistribution[];
+  avgRangeDistribution: AvgRangeDistribution[];
 };
 
 function parseDrawDate(date: string): Date {
@@ -112,21 +118,40 @@ export function analyzeDraws(
     .map((r) => r.number);
 
   const latestDraw = sortedDraws[0];
-  const rangeDistribution: RangeDistribution[] = (config.ranges ?? []).map(
-    (range) => {
-      const numbersInRange =
-        latestDraw?.numbers.filter(
-          (n) => n >= range.min && n <= range.max
-        ) ?? [];
-      return {
-        label: range.label,
-        min: range.min,
-        max: range.max,
-        count: numbersInRange.length,
-        numbers: numbersInRange,
-      };
+  const ranges = config.ranges ?? [];
+  const rangeTotals = new Map<string, number>();
+  for (const range of ranges) {
+    rangeTotals.set(range.label, 0);
+  }
+
+  for (const draw of sortedDraws) {
+    for (const range of ranges) {
+      const countInRange = draw.numbers.filter(
+        (n) => n >= range.min && n <= range.max
+      ).length;
+      rangeTotals.set(range.label, (rangeTotals.get(range.label) ?? 0) + countInRange);
     }
-  );
+  }
+
+  const avgRangeDistribution: AvgRangeDistribution[] = ranges.map((range) => ({
+    label: range.label,
+    avgPerDraw:
+      totalDraws > 0
+        ? Math.round(((rangeTotals.get(range.label) ?? 0) / totalDraws) * 10) / 10
+        : 0,
+  }));
+
+  const rangeDistribution: RangeDistribution[] = ranges.map((range) => {
+    const numbersInRange =
+      latestDraw?.numbers.filter((n) => n >= range.min && n <= range.max) ?? [];
+    return {
+      label: range.label,
+      min: range.min,
+      max: range.max,
+      count: numbersInRange.length,
+      numbers: numbersInRange,
+    };
+  });
 
   return {
     totalDraws,
@@ -136,6 +161,7 @@ export function analyzeDraws(
     coldNumbers,
     overdueNumbers,
     rangeDistribution,
+    avgRangeDistribution,
   };
 }
 
@@ -151,12 +177,30 @@ export function calculateMatches(
 export function buildAnalysisSummary(analysis: DrawAnalysis): string {
   const hot = analysis.hotNumbers.join(", ");
   const cold = analysis.coldNumbers.join(", ");
-  const overdue = analysis.overdueNumbers.join(", ");
+  const overdueDetail = analysis.recency
+    .filter((r) => r.status === "overdue" || r.status === "never")
+    .sort((a, b) => (b.drawsAgo ?? 999) - (a.drawsAgo ?? 999))
+    .slice(0, 5)
+    .map((r) =>
+      r.drawsAgo === null ? `${r.number} (never)` : `${r.number} (${r.drawsAgo} draws)`
+    )
+    .join(", ");
+  const frequencyDetail = [...analysis.frequencies]
+    .sort((a, b) => a.number - b.number)
+    .map((f) => `${f.number}:${f.frequency}`)
+    .join(", ");
+  const typicalBalance =
+    analysis.avgRangeDistribution.length > 0
+      ? analysis.avgRangeDistribution.map((r) => `${r.label}: ${r.avgPerDraw}`).join(", ")
+      : "N/A";
+
   return [
     `Total draws analyzed: ${analysis.totalDraws}`,
     `Hot numbers (most frequent): ${hot}`,
     `Cold numbers (least frequent): ${cold}`,
-    `Overdue numbers: ${overdue}`,
+    `Overdue numbers: ${overdueDetail || "none"}`,
+    `Typical balance per draw — ${typicalBalance}`,
+    `All frequencies (number:count): ${frequencyDetail}`,
   ].join("\n");
 }
 

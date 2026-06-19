@@ -99,7 +99,7 @@ ${recentDraws || "No historical data available."}
 TASK:
 Generate exactly ${ticketCount} unique lottery tickets based on statistical heuristics:
 - Mix hot (frequent) numbers with cold/overdue numbers
-- Balance across low/mid/high ranges when applicable
+- Balance across low/mid/high ranges using the typical balance per draw shown above
 - Ensure diversity across tickets (no two identical tickets)
 - Each ticket needs a short explanation (1-2 sentences) in French
 
