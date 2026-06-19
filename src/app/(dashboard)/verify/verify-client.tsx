@@ -56,8 +56,8 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Vérifier les tickets</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Vérifier les tickets</h1>
+        <p className="mt-1 text-sm text-gray-600 sm:text-base">
           Comparez vos tickets sauvegardés avec un tirage réel
         </p>
       </div>
@@ -67,7 +67,7 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
           <CardTitle>Sélectionner un tirage</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleVerify} className="flex flex-wrap items-end gap-4">
+          <form onSubmit={handleVerify} className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
             <div className="space-y-2">
               <Label>Filtrer par jeu</Label>
               <Select
@@ -76,7 +76,7 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
                   setGameFilter(e.target.value as Game | "");
                   setSelectedDrawId("");
                 }}
-                className="w-40"
+                className="w-full sm:w-44"
               >
                 <option value="">Tous</option>
                 {GAME_LIST.map((g) => (
@@ -91,7 +91,7 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
               <Select
                 value={selectedDrawId}
                 onChange={(e) => setSelectedDrawId(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64"
                 required
               >
                 <option value="">Choisir un tirage...</option>
@@ -102,7 +102,7 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
                 ))}
               </Select>
             </div>
-            <Button type="submit" disabled={loading || !selectedDrawId}>
+            <Button type="submit" disabled={loading || !selectedDrawId} className="w-full sm:w-auto">
               {loading ? "Vérification..." : "Vérifier"}
             </Button>
           </form>

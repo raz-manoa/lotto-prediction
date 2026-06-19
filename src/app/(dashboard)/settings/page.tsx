@@ -127,15 +127,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Paramètres IA</h1>
-          <p className="mt-1 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Paramètres IA</h1>
+          <p className="mt-1 text-sm text-gray-600 sm:text-base">
             Configurez votre clé API Claude (BYOK). La clé est chiffrée et
             jamais affichée en clair.
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setShowForm(true); }}>
+        <Button onClick={() => { resetForm(); setShowForm(true); }} className="shrink-0">
           Nouvelle config
         </Button>
       </div>
@@ -175,14 +175,14 @@ export default function SettingsPage() {
                       {config.isDefault && " · Par défaut"}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {!config.isDefault && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSetDefault(config.id)}
                       >
-                        Définir par défaut
+                        Par défaut
                       </Button>
                     )}
                     <Button

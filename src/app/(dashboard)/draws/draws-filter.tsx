@@ -16,6 +16,7 @@ export function DrawsFilter({ currentGame }: { currentGame?: Game }) {
     } else {
       params.delete("game");
     }
+    params.delete("page");
     router.push(`/draws?${params.toString()}`);
   }
 
@@ -23,7 +24,7 @@ export function DrawsFilter({ currentGame }: { currentGame?: Game }) {
     <Select
       value={currentGame ?? ""}
       onChange={handleChange}
-      className="max-w-xs"
+      className="w-full sm:max-w-xs"
     >
       <option value="">Tous les jeux</option>
       {GAME_LIST.map((g) => (

@@ -96,8 +96,8 @@ export default function PredictPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Prédictions</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Prédictions</h1>
+        <p className="mt-1 text-sm text-gray-600 sm:text-base">
           Générez des tickets basés sur l&apos;analyse historique et l&apos;IA
         </p>
       </div>
@@ -114,13 +114,13 @@ export default function PredictPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleGenerate} className="flex flex-wrap items-end gap-4">
+          <form onSubmit={handleGenerate} className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
             <div className="space-y-2">
               <Label>Jeu</Label>
               <Select
                 value={game}
                 onChange={(e) => setGame(e.target.value as Game)}
-                className="w-40"
+                className="w-full sm:w-44"
               >
                 {GAME_LIST.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -137,10 +137,10 @@ export default function PredictPage() {
                 max={10}
                 value={ticketCount}
                 onChange={(e) => setTicketCount(parseInt(e.target.value, 10))}
-                className="w-24"
+                className="w-full sm:w-28"
               />
             </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? "Génération..." : "Générer"}
             </Button>
           </form>
@@ -208,19 +208,20 @@ export default function PredictPage() {
 
           <Card>
             <CardContent className="pt-6">
-              <div className="flex flex-wrap items-end gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
                 <div className="space-y-2">
                   <Label>Date de tirage cible (optionnel)</Label>
                   <Input
                     type="date"
                     value={targetDate}
                     onChange={(e) => setTargetDate(e.target.value)}
-                    className="w-48"
+                    className="w-full sm:w-48"
                   />
                 </div>
                 <Button
                   onClick={handleSave}
                   disabled={selectedTickets.size === 0}
+                  className="w-full sm:w-auto"
                 >
                   Sauvegarder {selectedTickets.size} ticket(s)
                 </Button>

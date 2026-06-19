@@ -72,11 +72,11 @@ export function NumberGrid({
 
 export function NumberBalls({ numbers }: { numbers: number[] }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5 sm:gap-2">
       {numbers.map((n) => (
         <span
           key={n}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white sm:h-9 sm:w-9 sm:text-sm"
         >
           {n}
         </span>

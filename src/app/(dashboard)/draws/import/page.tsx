@@ -85,20 +85,20 @@ export default function ImportDrawsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Importer des tirages</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Importer des tirages</h1>
+        <p className="mt-1 text-sm text-gray-600 sm:text-base">
           Saisissez les anciens résultats manuellement ou en masse
         </p>
       </div>
 
-      <div className="flex gap-2">
+      <div>
         <Select
           value={game}
           onChange={(e) => {
             setGame(e.target.value as Game);
             setNumbers([]);
           }}
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
         >
           {GAME_LIST.map((g) => (
             <option key={g.id} value={g.id}>
