@@ -1,0 +1,130 @@
+{
+  "analysis_date": "2025-12-05T20:20:07.649876",
+  "draw_date": "2025-12-05",
+  "result": [
+    1,
+    2,
+    8,
+    14,
+    16,
+    21,
+    22
+  ],
+  "insights": {
+    "frequency_analysis": {
+      "description": "How frequently today's numbers appeared in historical data",
+      "numbers": {
+        "1": {
+          "frequency": 9,
+          "percentage": 32.1
+        },
+        "2": {
+          "frequency": 7,
+          "percentage": 25.0
+        },
+        "8": {
+          "frequency": 5,
+          "percentage": 17.9
+        },
+        "14": {
+          "frequency": 11,
+          "percentage": 39.3
+        },
+        "16": {
+          "frequency": 7,
+          "percentage": 25.0
+        },
+        "21": {
+          "frequency": 10,
+          "percentage": 35.7
+        },
+        "22": {
+          "frequency": 6,
+          "percentage": 21.4
+        }
+      }
+    },
+    "recency_analysis": {
+      "description": "How recently each number appeared before today",
+      "numbers": {
+        "1": {
+          "draws_ago": 3,
+          "status": "recent"
+        },
+        "2": {
+          "draws_ago": 5,
+          "status": "moderate"
+        },
+        "8": {
+          "draws_ago": 6,
+          "status": "moderate"
+        },
+        "14": {
+          "draws_ago": 1,
+          "status": "recent"
+        },
+        "16": {
+          "draws_ago": 6,
+          "status": "moderate"
+        },
+        "21": {
+          "draws_ago": 9,
+          "status": "overdue"
+        },
+        "22": {
+          "draws_ago": 7,
+          "status": "moderate"
+        }
+      }
+    },
+    "consecutive_appearance": {
+      "description": "Numbers that appeared in both today and the previous draw",
+      "numbers": [
+        14
+      ],
+      "count": 1
+    },
+    "range_distribution": {
+      "low_1_9": {
+        "count": 3,
+        "numbers": [
+          1,
+          2,
+          8
+        ]
+      },
+      "mid_10_19": {
+        "count": 2,
+        "numbers": [
+          14,
+          16
+        ]
+      },
+      "high_20_28": {
+        "count": 2,
+        "numbers": [
+          21,
+          22
+        ]
+      }
+    },
+    "patterns_observed": [
+      "Number 14 appeared in consecutive draws (carry-over pattern)",
+      "Multiple high-frequency numbers appeared together",
+      "Strong representation in low range (1-9)"
+    ],
+    "lessons_learned": [
+      "Consecutive appearance is possible - consider including 1-2 numbers from the previous draw",
+      "Today's draw had good balance: 3 low, 2 mid, 2 high - maintain range diversity",
+      "High-frequency numbers (appeared 9+ times) continue to be important",
+      "Numbers that appeared 3-7 draws ago can reappear - don't ignore moderately recent numbers"
+    ],
+    "recommendations_for_next_draw": [
+      "Consider including 14 in next predictions (appeared in consecutive draws)",
+      "Maintain range balance: aim for 2-3 numbers in each range (low/mid/high)",
+      "Don't over-rely on 'overdue' numbers - today's draw had mostly recent/moderate numbers",
+      "High-frequency numbers (6, 14, 20, 21) remain important but not exclusive",
+      "Consider numbers that appeared 3-7 draws ago as they can reappear"
+    ]
+  }
+}

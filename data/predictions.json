@@ -1,0 +1,36 @@
+[
+  {
+    "prediction_date": "2025-12-05",
+    "target_draw_date": "2025-12-09",
+    "based_on_draws": 28,
+    "tickets": [
+      {
+        "game": 1,
+        "numbers": [6, 10, 13, 20, 27, 18, 25],
+        "strategy": "hot-heavy (6, 10, 13, 20, 27) + overdue (18, 25)"
+      },
+      {
+        "game": 2,
+        "numbers": [9, 11, 19, 23, 4, 12, 15],
+        "strategy": "hot (9, 11, 19, 23) + very overdue (4, 12, 15)"
+      },
+      {
+        "game": 3,
+        "numbers": [3, 7, 10, 17, 24, 26, 28],
+        "strategy": "moderate frequency mix + overdue (24, 26, 28)"
+      },
+      {
+        "game": 4,
+        "numbers": [5, 6, 13, 20, 22, 18, 12],
+        "strategy": "hot foundation (6, 13, 20) + recent (22) + overdue (5, 18, 12)"
+      },
+      {
+        "game": 5,
+        "numbers": [7, 9, 11, 19, 23, 25, 15],
+        "strategy": "balanced mix of hot and very overdue numbers"
+      }
+    ],
+    "actual_result": null,
+    "evaluation": null
+  }
+]
