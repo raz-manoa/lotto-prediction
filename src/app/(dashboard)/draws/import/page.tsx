@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { format } from "date-fns";
 import { Game } from "@prisma/client";
-import { GAME_LIST } from "@/lib/games";
+import { GAME_LIST, getGameConfig, isValidDrawDate, formatDrawDays } from "@/lib/games";
 import { NumberGrid } from "@/components/number-grid";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Select, Textarea } from "@/components/ui/select";
 import {
@@ -95,8 +96,15 @@ export default function ImportDrawsPage() {
         <Select
           value={game}
           onChange={(e) => {
-            setGame(e.target.value as Game);
+            const newGame = e.target.value as Game;
+            setGame(newGame);
             setNumbers([]);
+            if (date) {
+              const drawDate = new Date(`${date}T12:00:00`);
+              if (!isValidDrawDate(newGame, drawDate)) {
+                setDate("");
+              }
+            }
           }}
           className="w-full sm:max-w-xs"
         >
@@ -150,14 +158,19 @@ export default function ImportDrawsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleFormSubmit} className="space-y-6">
-              <div className="space-y-2 max-w-xs">
-                <Label htmlFor="date">Date du tirage</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
+              <div className="space-y-2">
+                <Label>Date du tirage</Label>
+                <p className="text-sm text-muted-foreground">
+                  Jours de tirage : {formatDrawDays(getGameConfig(game).drawDays)}
+                </p>
+                <Calendar
+                  mode="single"
+                  selected={date ? new Date(`${date}T12:00:00`) : undefined}
+                  onSelect={(selected) =>
+                    setDate(selected ? format(selected, "yyyy-MM-dd") : "")
+                  }
+                  disabled={(day) => !isValidDrawDate(game, day)}
+                  className="rounded-md border w-fit"
                 />
               </div>
               <NumberGrid
@@ -165,7 +178,10 @@ export default function ImportDrawsPage() {
                 selected={numbers}
                 onChange={setNumbers}
               />
-              <Button type="submit" disabled={loading || numbers.length === 0}>
+              <Button
+                type="submit"
+                disabled={loading || numbers.length === 0 || !date}
+              >
                 {loading ? "Import..." : "Importer"}
               </Button>
             </form>

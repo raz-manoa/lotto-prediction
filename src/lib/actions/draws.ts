@@ -6,6 +6,9 @@ import { Game } from "@prisma/client";
 import {
   validateNumbers,
   getDayFromDate,
+  isValidDrawDate,
+  getGameConfig,
+  formatDrawDays,
   deduplicateLotoFamilyDraws,
   type DrawFilter,
 } from "@/lib/games";
@@ -79,6 +82,13 @@ export async function importDraw(
   if (!validation.valid) throw new Error(validation.error);
 
   const drawDate = new Date(date + "T12:00:00");
+
+  if (!isValidDrawDate(game, drawDate)) {
+    const config = getGameConfig(game);
+    throw new Error(
+      `Date invalide pour ${config.name}. Tirages le ${formatDrawDays(config.drawDays)} uniquement.`
+    );
+  }
 
   await prisma.draw.upsert({
     where: { game_date: { game, date: drawDate } },

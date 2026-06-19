@@ -183,6 +183,40 @@ export function getDayFromDate(date: Date): string {
   return date.toLocaleDateString("en-US", { weekday: "long" });
 }
 
+export const WEEKDAY_INDEX: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
+
+const FRENCH_DRAW_DAYS: Record<string, string> = {
+  Sunday: "Dimanche",
+  Monday: "Lundi",
+  Tuesday: "Mardi",
+  Wednesday: "Mercredi",
+  Thursday: "Jeudi",
+  Friday: "Vendredi",
+  Saturday: "Samedi",
+};
+
+export function getDrawDayIndices(game: Game): number[] {
+  return getGameConfig(game).drawDays.map((day) => WEEKDAY_INDEX[day]);
+}
+
+export function isValidDrawDate(game: Game, date: Date): boolean {
+  return getDrawDayIndices(game).includes(date.getDay());
+}
+
+export function formatDrawDays(drawDays: string[]): string {
+  const labels = drawDays.map((day) => FRENCH_DRAW_DAYS[day] ?? day);
+  if (labels.length <= 1) return labels[0] ?? "";
+  return `${labels.slice(0, -1).join(", ")} et ${labels[labels.length - 1]}`;
+}
+
 export const ANTHROPIC_MODELS = [
   { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
   { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5" },
