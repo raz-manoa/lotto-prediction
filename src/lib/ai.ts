@@ -22,7 +22,25 @@ export type GeneratedTicket = {
 export type PredictionResult = {
   tickets: GeneratedTicket[];
   rationale: string;
+  source: "ai" | "heuristic";
+  warning?: string;
 };
+
+function getAiErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (/credit balance|insufficient.*credit|billing/i.test(message)) {
+    return "Crédits Anthropic insuffisants. Rechargez votre compte sur console.anthropic.com ou utilisez une autre clé API.";
+  }
+  if (/invalid.*api.*key|authentication|401/i.test(message)) {
+    return "Clé API Anthropic invalide. Vérifiez votre configuration dans Paramètres.";
+  }
+  if (/rate limit|429/i.test(message)) {
+    return "Limite de requêtes Anthropic atteinte. Réessayez dans quelques minutes.";
+  }
+
+  return "L'API Claude est indisponible. Tickets générés par analyse heuristique locale.";
+}
 
 function buildPrompt(
   game: Game,
@@ -158,7 +176,8 @@ function generateFallbackTickets(
   return {
     tickets,
     rationale:
-      "Tickets générés par heuristique locale (fréquence et récence) faute de réponse IA valide.",
+      "Tickets générés par heuristique locale (fréquence et récence) — analyse statistique sans IA.",
+    source: "heuristic",
   };
 }
 
@@ -194,16 +213,20 @@ export async function generatePredictions(
       return {
         tickets: [...sanitized, ...fallback.tickets].slice(0, ticketCount),
         rationale: object.rationale,
+        source: "ai",
       };
     }
 
     return {
       tickets: sanitized.slice(0, ticketCount),
       rationale: object.rationale,
+      source: "ai",
     };
   } catch (error) {
-    console.error("AI generation failed, using fallback:", error);
-    return generateFallbackTickets(game, ticketCount, draws);
+    const warning = getAiErrorMessage(error);
+    console.warn("AI generation failed, using heuristic fallback:", warning);
+    const fallback = generateFallbackTickets(game, ticketCount, draws);
+    return { ...fallback, warning };
   }
 }
 

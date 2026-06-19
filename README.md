@@ -24,11 +24,29 @@ cp .env.example .env
 # Remplir DATABASE_URL, AUTH_SECRET, ENCRYPTION_KEY
 
 pnpm install
-pnpm exec prisma generate
 pnpm exec prisma db push
 pnpm db:seed
 
 pnpm dev
+```
+
+**Base de données locale** — Postgres doit tourner sur `localhost:5432`. Créez la base :
+
+```bash
+createdb lotto   # ou: psql -c "CREATE DATABASE lotto;"
+```
+
+Puis dans `.env` :
+
+```
+DATABASE_URL="postgresql://VOTRE_USER@localhost:5432/lotto?schema=public"
+```
+
+Alternative Docker (port 5433) :
+
+```bash
+docker compose up -d
+# DATABASE_URL="postgresql://lotto:lotto@localhost:5433/lotto?schema=public"
 ```
 
 Générer les secrets :

@@ -62,6 +62,7 @@ export default function LoginForm() {
       router.refresh();
     } catch {
       setError("Une erreur est survenue");
+    } finally {
       setLoading(false);
     }
   }

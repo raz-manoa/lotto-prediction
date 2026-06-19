@@ -49,8 +49,10 @@ export async function generatePredictionTickets(
     data: {
       userId: session.user.id,
       game,
-      model: aiConfig.model,
-      rationale: result.rationale,
+      model: result.source === "ai" ? aiConfig.model : `${aiConfig.model} (heuristique)`,
+      rationale: result.warning
+        ? `${result.warning}\n\n${result.rationale}`
+        : result.rationale,
       tickets: {
         create: result.tickets.map((t) => ({
           numbers: t.numbers,
@@ -69,7 +71,9 @@ export async function generatePredictionTickets(
     predictionId: prediction.id,
     game: prediction.game,
     model: prediction.model,
-    rationale: prediction.rationale,
+    rationale: result.rationale,
+    source: result.source,
+    warning: result.warning,
     tickets: prediction.tickets.map((t) => ({
       id: t.id,
       numbers: t.numbers,

@@ -33,6 +33,8 @@ type PredictionOutput = {
   game: Game;
   model: string;
   rationale: string;
+  source?: "ai" | "heuristic";
+  warning?: string;
   tickets: TicketResult[];
   disclaimer: string;
 };
@@ -148,6 +150,17 @@ export default function PredictPage() {
 
       {result && (
         <div className="space-y-6">
+          {result.warning && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-medium">Génération IA indisponible</p>
+              <p className="mt-1">{result.warning}</p>
+              <p className="mt-2 text-amber-800">
+                Des tickets heuristiques (basés sur l&apos;historique) ont été
+                proposés à la place.
+              </p>
+            </div>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Résumé de la stratégie</CardTitle>
