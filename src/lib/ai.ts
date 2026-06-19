@@ -3,7 +3,11 @@ import { generateObject } from "ai";
 import { Game } from "@prisma/client";
 import { z } from "zod";
 import { analyzeDraws, buildAnalysisSummary, type DrawRecord } from "./analysis";
-import { getGameConfig, validateNumbers } from "./games";
+import {
+  getGameConfig,
+  RETIRED_ANTHROPIC_MODELS,
+  validateNumbers,
+} from "./games";
 import { sortNumbers, numbersKey } from "./utils";
 
 export type AiConfigInput = {
@@ -26,8 +30,16 @@ export type PredictionResult = {
   warning?: string;
 };
 
-function getAiErrorMessage(error: unknown): string {
+function getAiErrorMessage(error: unknown, model?: string): string {
   const message = error instanceof Error ? error.message : String(error);
+  const statusCode =
+    error && typeof error === "object" && "statusCode" in error
+      ? Number(error.statusCode)
+      : undefined;
+  const responseBody =
+    error && typeof error === "object" && "responseBody" in error
+      ? String(error.responseBody)
+      : "";
 
   if (/credit balance|insufficient.*credit|billing/i.test(message)) {
     return "Crédits Anthropic insuffisants. Rechargez votre compte sur console.anthropic.com ou utilisez une autre clé API.";
@@ -38,8 +50,22 @@ function getAiErrorMessage(error: unknown): string {
   if (/rate limit|429/i.test(message)) {
     return "Limite de requêtes Anthropic atteinte. Réessayez dans quelques minutes.";
   }
+  if (
+    statusCode === 404 ||
+    /not_found_error|model.*not.*found/i.test(message + responseBody)
+  ) {
+    const replacement = model ? RETIRED_ANTHROPIC_MODELS[model] : undefined;
+    if (replacement) {
+      return `Le modèle ${model} n'est plus disponible. Mettez à jour vers ${replacement} dans Paramètres.`;
+    }
+    return "Modèle Claude introuvable ou retiré. Choisissez un modèle actuel dans Paramètres.";
+  }
 
   return "L'API Claude est indisponible. Tickets générés par analyse heuristique locale.";
+}
+
+function resolveAnthropicModel(model: string): string {
+  return RETIRED_ANTHROPIC_MODELS[model] ?? model;
 }
 
 function buildPrompt(
@@ -192,10 +218,11 @@ export async function generatePredictions(
   const schema = createTicketSchema(game, ticketCount);
 
   const anthropic = createAnthropic({ apiKey: aiConfig.apiKey });
+  const modelId = resolveAnthropicModel(aiConfig.model);
 
   try {
     const { object } = await generateObject({
-      model: anthropic(aiConfig.model),
+      model: anthropic(modelId),
       schema,
       prompt,
       maxTokens: aiConfig.maxTokens,
@@ -223,8 +250,12 @@ export async function generatePredictions(
       source: "ai",
     };
   } catch (error) {
-    const warning = getAiErrorMessage(error);
-    console.warn("AI generation failed, using heuristic fallback:", warning);
+    const warning = getAiErrorMessage(error, aiConfig.model);
+    console.warn(
+      "AI generation failed, using heuristic fallback:",
+      warning,
+      error instanceof Error ? error.message : error
+    );
     const fallback = generateFallbackTickets(game, ticketCount, draws);
     return { ...fallback, warning };
   }

@@ -184,7 +184,16 @@ export function getDayFromDate(date: Date): string {
 }
 
 export const ANTHROPIC_MODELS = [
-  { id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
-  { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
-  { id: "claude-3-opus-20240229", label: "Claude 3 Opus" },
+  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5" },
+  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  { id: "claude-opus-4-6", label: "Claude Opus 4.6" },
 ] as const;
+
+export const RETIRED_ANTHROPIC_MODELS: Record<string, string> = {
+  "claude-sonnet-4-20250514": "claude-sonnet-4-6",
+  "claude-3-5-haiku-20241022": "claude-haiku-4-5-20251001",
+  "claude-3-opus-20240229": "claude-opus-4-6",
+  "claude-3-7-sonnet-20250219": "claude-sonnet-4-6",
+  "claude-3-5-sonnet-20241022": "claude-sonnet-4-6",
+};

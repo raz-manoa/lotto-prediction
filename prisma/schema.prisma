@@ -73,7 +73,7 @@ model AiConfig {
   userId           String
   name             String     @default("Default")
   provider         AiProvider @default(ANTHROPIC)
-  model            String     @default("claude-sonnet-4-20250514")
+  model            String     @default("claude-sonnet-4-6")
   apiKeyEncrypted  String
   maxTokens        Int        @default(4096)
   temperature      Float      @default(0.7)
