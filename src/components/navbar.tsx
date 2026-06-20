@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   MoreHorizontal,
+  BarChart3,
 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/draws", label: "Tirages", icon: List },
+  { href: "/analysis", label: "Analyse", icon: BarChart3 },
   { href: "/draws/import", label: "Importer", icon: Upload },
   { href: "/predict", label: "Prédictions", icon: Sparkles },
   { href: "/tickets", label: "Mes tickets", icon: Ticket },
@@ -35,6 +37,7 @@ const mobileTabs = [
 ] as const;
 
 const moreItems = [
+  { href: "/analysis", label: "Analyse", icon: BarChart3 },
   { href: "/draws/import", label: "Importer", icon: Upload },
   { href: "/settings", label: "Paramètres", icon: Settings },
 ] as const;
@@ -46,6 +49,7 @@ function isActive(pathname: string, href: string) {
 
 function isMoreActive(pathname: string) {
   return (
+    pathname.startsWith("/analysis") ||
     pathname.startsWith("/draws/import") ||
     pathname.startsWith("/settings")
   );

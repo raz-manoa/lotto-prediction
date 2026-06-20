@@ -2,7 +2,11 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { generateObject } from "ai";
 import { Game } from "@prisma/client";
 import { z } from "zod";
-import { analyzeDraws, buildAnalysisSummary, type DrawRecord } from "./analysis";
+import {
+  analyzeExtended,
+  buildExtendedSummary,
+  type DrawRecord,
+} from "./analysis";
 import {
   getGameConfig,
   RETIRED_ANTHROPIC_MODELS,
@@ -74,9 +78,10 @@ function buildPrompt(
   draws: DrawRecord[]
 ): string {
   const config = getGameConfig(game);
-  const analysis = analyzeDraws(draws, game);
-  const summary = buildAnalysisSummary(analysis);
-  const recentDraws = draws
+  const extended = analyzeExtended(draws, game);
+  const summary = buildExtendedSummary(extended);
+  const recentDraws = [...draws]
+    .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 10)
     .map(
       (d) =>
@@ -98,7 +103,8 @@ ${recentDraws || "No historical data available."}
 
 TASK:
 Generate exactly ${ticketCount} unique lottery tickets based on statistical heuristics:
-- Mix hot (frequent) numbers with cold/overdue numbers
+- Prioritize numbers with high composite scores while keeping diversity across tickets
+- Mix hot (frequent) numbers with cold/overdue numbers using window and day-of-week insights
 - Balance across low/mid/high ranges using the typical balance per draw shown above
 - Ensure diversity across tickets (no two identical tickets)
 - Each ticket needs a short explanation (1-2 sentences) in French
@@ -161,11 +167,13 @@ function generateFallbackTickets(
   draws: DrawRecord[]
 ): PredictionResult {
   const config = getGameConfig(game);
-  const analysis = analyzeDraws(draws, game);
+  const extended = analyzeExtended(draws, game);
+  const topComposite = extended.composite.slice(0, 10).map((entry) => entry.number);
   const pool = [
-    ...analysis.hotNumbers,
-    ...analysis.overdueNumbers,
-    ...analysis.coldNumbers.slice(0, 3),
+    ...topComposite,
+    ...extended.global.hotNumbers,
+    ...extended.global.overdueNumbers,
+    ...extended.global.coldNumbers.slice(0, 3),
   ];
   const allNumbers = Array.from(
     { length: config.max - config.min + 1 },
@@ -195,14 +203,14 @@ function generateFallbackTickets(
 
     tickets.push({
       numbers,
-      explanation: `Mélange de numéros chauds (${analysis.hotNumbers.slice(0, 2).join(", ")}) et en retard.`,
+      explanation: `Mélange basé sur le score composite (${topComposite.slice(0, 2).join(", ")}) et numéros en retard.`,
     });
   }
 
   return {
     tickets,
     rationale:
-      "Tickets générés par heuristique locale (fréquence et récence) — analyse statistique sans IA.",
+      "Tickets générés par heuristique locale (score composite, fréquence et récence) — analyse statistique sans IA.",
     source: "heuristic",
   };
 }

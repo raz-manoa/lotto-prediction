@@ -1,5 +1,5 @@
 import { Game } from "@prisma/client";
-import { getGameConfig } from "./games";
+import { getGameConfig, type GameConfig } from "./games";
 
 export type DrawRecord = {
   date: string;
@@ -43,8 +43,257 @@ export type DrawAnalysis = {
   avgRangeDistribution: AvgRangeDistribution[];
 };
 
+export type SegmentAnalysis = {
+  key: string;
+  label: string;
+  totalDraws: number;
+  analysis: DrawAnalysis;
+};
+
+export type CompositeScoreComponents = {
+  freqGlobal: number;
+  freqRecent: number;
+  overdue: number;
+  dayAffinity: number;
+};
+
+export type CompositeScore = {
+  number: number;
+  score: number;
+  components: CompositeScoreComponents;
+};
+
+export type ExtendedAnalysis = {
+  global: DrawAnalysis;
+  windows: SegmentAnalysis[];
+  byDay: SegmentAnalysis[];
+  composite: CompositeScore[];
+};
+
+const TIME_WINDOWS = [
+  { key: "2w", label: "2 semaines", days: 14 },
+  { key: "1m", label: "1 mois", days: 30 },
+  { key: "3m", label: "3 mois", days: 90 },
+  { key: "1y", label: "1 an", days: 365 },
+] as const;
+
+// Poids du score composite : récence récente pèse un peu plus, le reste équilibre régularité / retard / jour.
+const COMPOSITE_WEIGHTS = {
+  freqGlobal: 0.25,
+  freqRecent: 0.3,
+  overdue: 0.25,
+  dayAffinity: 0.2,
+} as const;
+
+const FRENCH_DAY_LABELS: Record<string, string> = {
+  Sunday: "Dimanche",
+  Monday: "Lundi",
+  Tuesday: "Mardi",
+  Wednesday: "Mercredi",
+  Thursday: "Jeudi",
+  Friday: "Vendredi",
+  Saturday: "Samedi",
+};
+
 function parseDrawDate(date: string): Date {
   return new Date(date + "T12:00:00");
+}
+
+function sortDrawsDesc(draws: DrawRecord[]): DrawRecord[] {
+  return [...draws].sort(
+    (a, b) => parseDrawDate(b.date).getTime() - parseDrawDate(a.date).getTime()
+  );
+}
+
+function filterByWindow(draws: DrawRecord[], days: number): DrawRecord[] {
+  const sorted = sortDrawsDesc(draws);
+  if (sorted.length === 0) return [];
+
+  const latestDate = parseDrawDate(sorted[0].date);
+  const cutoff = new Date(latestDate);
+  cutoff.setDate(cutoff.getDate() - days);
+
+  return sorted.filter((draw) => parseDrawDate(draw.date) >= cutoff);
+}
+
+function normalizeValues(values: Map<number, number>): Map<number, number> {
+  const max = Math.max(...values.values(), 1);
+  const normalized = new Map<number, number>();
+  for (const [key, value] of values) {
+    normalized.set(key, value / max);
+  }
+  return normalized;
+}
+
+function frequencyMap(
+  analysis: DrawAnalysis,
+  config: GameConfig
+): Map<number, number> {
+  const map = new Map<number, number>();
+  for (let n = config.min; n <= config.max; n++) {
+    map.set(n, 0);
+  }
+  for (const entry of analysis.frequencies) {
+    map.set(entry.number, entry.percentage / 100);
+  }
+  return map;
+}
+
+function overdueMap(
+  recency: RecencyEntry[],
+  config: GameConfig
+): Map<number, number> {
+  const map = new Map<number, number>();
+  let maxAgo = 0;
+
+  for (const entry of recency) {
+    if (entry.drawsAgo !== null) {
+      maxAgo = Math.max(maxAgo, entry.drawsAgo);
+    }
+  }
+
+  const effectiveMax = Math.max(maxAgo + 1, 1);
+
+  for (let n = config.min; n <= config.max; n++) {
+    map.set(n, 0);
+  }
+
+  for (const entry of recency) {
+    const drawsAgo = entry.drawsAgo ?? effectiveMax;
+    map.set(entry.number, drawsAgo / effectiveMax);
+  }
+
+  return map;
+}
+
+function dayAffinityMap(
+  byDay: SegmentAnalysis[],
+  drawDays: string[],
+  config: GameConfig
+): Map<number, number> {
+  const map = new Map<number, number>();
+  for (let n = config.min; n <= config.max; n++) {
+    map.set(n, 0);
+  }
+
+  const relevant = byDay.filter((segment) => drawDays.includes(segment.key));
+  if (relevant.length === 0) return map;
+
+  for (const segment of relevant) {
+    for (const entry of segment.analysis.frequencies) {
+      map.set(
+        entry.number,
+        (map.get(entry.number) ?? 0) + entry.percentage / 100
+      );
+    }
+  }
+
+  for (let n = config.min; n <= config.max; n++) {
+    map.set(n, (map.get(n) ?? 0) / relevant.length);
+  }
+
+  return normalizeValues(map);
+}
+
+function computeComposite(
+  global: DrawAnalysis,
+  recent: DrawAnalysis,
+  byDay: SegmentAnalysis[],
+  game: Game
+): CompositeScore[] {
+  const config = getGameConfig(game);
+  const globalFreq = normalizeValues(frequencyMap(global, config));
+  const recentFreq = normalizeValues(frequencyMap(recent, config));
+  const overdue = normalizeValues(overdueMap(global.recency, config));
+  const dayAffinity = dayAffinityMap(byDay, config.drawDays, config);
+
+  const scores: CompositeScore[] = [];
+
+  for (let n = config.min; n <= config.max; n++) {
+    const components: CompositeScoreComponents = {
+      freqGlobal: Math.round((globalFreq.get(n) ?? 0) * 100),
+      freqRecent: Math.round((recentFreq.get(n) ?? 0) * 100),
+      overdue: Math.round((overdue.get(n) ?? 0) * 100),
+      dayAffinity: Math.round((dayAffinity.get(n) ?? 0) * 100),
+    };
+
+    const raw =
+      COMPOSITE_WEIGHTS.freqGlobal * (globalFreq.get(n) ?? 0) +
+      COMPOSITE_WEIGHTS.freqRecent * (recentFreq.get(n) ?? 0) +
+      COMPOSITE_WEIGHTS.overdue * (overdue.get(n) ?? 0) +
+      COMPOSITE_WEIGHTS.dayAffinity * (dayAffinity.get(n) ?? 0);
+
+    scores.push({
+      number: n,
+      score: Math.round(raw * 100),
+      components,
+    });
+  }
+
+  return scores.sort((a, b) => b.score - a.score);
+}
+
+export function analyzeExtended(
+  draws: DrawRecord[],
+  game: Game
+): ExtendedAnalysis {
+  const sortedDraws = sortDrawsDesc(draws);
+  const global = analyzeDraws(sortedDraws, game);
+
+  const windows: SegmentAnalysis[] = TIME_WINDOWS.map((window) => {
+    const filtered = filterByWindow(sortedDraws, window.days);
+    return {
+      key: window.key,
+      label: window.label,
+      totalDraws: filtered.length,
+      analysis: analyzeDraws(filtered, game),
+    };
+  });
+
+  windows.push({
+    key: "global",
+    label: "Global",
+    totalDraws: sortedDraws.length,
+    analysis: global,
+  });
+
+  const dayGroups = new Map<string, DrawRecord[]>();
+  for (const draw of sortedDraws) {
+    const day = draw.day ?? "Unknown";
+    const existing = dayGroups.get(day) ?? [];
+    existing.push(draw);
+    dayGroups.set(day, existing);
+  }
+
+  const config = getGameConfig(game);
+  const orderedDays = [
+    ...config.drawDays,
+    ...[...dayGroups.keys()].filter((day) => !config.drawDays.includes(day)),
+  ];
+
+  const byDay: SegmentAnalysis[] = orderedDays
+    .filter((day) => dayGroups.has(day))
+    .map((day) => {
+      const dayDraws = dayGroups.get(day) ?? [];
+      return {
+        key: day,
+        label: FRENCH_DAY_LABELS[day] ?? day,
+        totalDraws: dayDraws.length,
+        analysis: analyzeDraws(dayDraws, game),
+      };
+    });
+
+  const recentWindow =
+    windows.find((window) => window.key === "1m")?.analysis ?? global;
+
+  const composite = computeComposite(global, recentWindow, byDay, game);
+
+  return {
+    global,
+    windows,
+    byDay,
+    composite,
+  };
 }
 
 export function analyzeDraws(
@@ -201,6 +450,45 @@ export function buildAnalysisSummary(analysis: DrawAnalysis): string {
     `Overdue numbers: ${overdueDetail || "none"}`,
     `Typical balance per draw — ${typicalBalance}`,
     `All frequencies (number:count): ${frequencyDetail}`,
+  ].join("\n");
+}
+
+export function buildExtendedSummary(extended: ExtendedAnalysis): string {
+  const topComposite = extended.composite
+    .slice(0, 12)
+    .map(
+      (entry) =>
+        `${entry.number} (score:${entry.score}, global:${entry.components.freqGlobal}, recent:${entry.components.freqRecent}, overdue:${entry.components.overdue}, day:${entry.components.dayAffinity})`
+    )
+    .join(", ");
+
+  const windowLines = extended.windows.map((segment) => {
+    const hot = segment.analysis.hotNumbers.join(", ") || "none";
+    const cold = segment.analysis.coldNumbers.join(", ") || "none";
+    const overdue = segment.analysis.overdueNumbers.join(", ") || "none";
+    return `${segment.label} (${segment.totalDraws} draws) — Hot: ${hot}; Cold: ${cold}; Overdue: ${overdue}`;
+  });
+
+  const dayLines = extended.byDay.map((segment) => {
+    const hot = segment.analysis.hotNumbers.join(", ") || "none";
+    const cold = segment.analysis.coldNumbers.join(", ") || "none";
+    return `${segment.label} (${segment.totalDraws} draws) — Hot: ${hot}; Cold: ${cold}`;
+  });
+
+  const globalSummary = buildAnalysisSummary(extended.global);
+
+  return [
+    "=== COMPOSITE SCORES (top 12, components 0-100) ===",
+    topComposite || "none",
+    "",
+    "=== BY TIME WINDOW ===",
+    ...windowLines,
+    "",
+    "=== BY DRAW DAY ===",
+    ...dayLines,
+    "",
+    "=== GLOBAL SUMMARY ===",
+    globalSummary,
   ].join("\n");
 }
 

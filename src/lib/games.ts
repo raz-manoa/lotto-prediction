@@ -143,6 +143,10 @@ export function parseDrawFilter(value?: string): DrawFilter | undefined {
   return undefined;
 }
 
+export function normalizeAnalysisGame(game?: string): DrawFilter {
+  return parseDrawFilter(game) ?? "LOTO_VERT";
+}
+
 export function getDrawFilterLabel(filter?: DrawFilter): string {
   if (!filter) return "";
   return DRAW_FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? "";
