@@ -30,7 +30,8 @@ const STAT_GROUP_META: Record<
   { title: string; analysisGame: Game }
 > = {
   LOTO_VERT: { title: "Loto Vert", analysisGame: "LOTO_VERT" },
-  LOTO_FAMILY: { title: "Loto & Loto+", analysisGame: "LOTO" },
+  LOTO: { title: "Loto", analysisGame: "LOTO" },
+  LOTO_PLUS: { title: "Loto+", analysisGame: "LOTO_PLUS" },
 };
 
 async function DrawsContent({
@@ -97,17 +98,10 @@ async function DrawsContent({
         selectedDate={validSelectedDate}
       />
 
-      {gameFilter === "LOTO_FAMILY" && (
-        <p className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          Loto et Loto+ partagent les mêmes numéros tirés chaque mercredi et
-          samedi. Les doublons sont regroupés automatiquement.
-        </p>
-      )}
-
       <div
         className={`grid gap-4 ${
           analysisCards.length > 1
-            ? "sm:grid-cols-2"
+            ? "sm:grid-cols-2 lg:grid-cols-3"
             : "max-w-md"
         }`}
       >

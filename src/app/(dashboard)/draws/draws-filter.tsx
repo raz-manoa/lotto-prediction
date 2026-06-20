@@ -162,7 +162,7 @@ export function DrawsFilter({
   );
 }
 
-/** Normalise l'ancien param game=LOTO ou LOTO_PLUS vers LOTO_FAMILY */
+/** Normalise le paramètre game de l'URL vers un DrawFilter valide */
 export function normalizeDrawFilterFromParams(
   game?: string
 ): DrawFilter | undefined {

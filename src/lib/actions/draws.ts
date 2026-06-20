@@ -9,7 +9,6 @@ import {
   isValidDrawDate,
   getGameConfig,
   formatDrawDays,
-  deduplicateLotoFamilyDraws,
   type DrawFilter,
 } from "@/lib/games";
 import { parseBulkDrawInput } from "@/lib/analysis";
@@ -24,44 +23,30 @@ export async function getDrawsForPage(filter?: DrawFilter) {
   const all = await prisma.draw.findMany({ orderBy: { date: "desc" } });
 
   const lotoVertDraws = all.filter((d) => d.game === "LOTO_VERT");
-  const lotoFamilyDraws = deduplicateLotoFamilyDraws(
-    all.filter((d) => d.game === "LOTO" || d.game === "LOTO_PLUS")
-  );
+  const lotoDraws = all.filter((d) => d.game === "LOTO");
+  const lotoPlusDraws = all.filter((d) => d.game === "LOTO_PLUS");
+
+  const statGroups: DrawStatGroup[] = [
+    { id: "LOTO_VERT", draws: lotoVertDraws },
+    { id: "LOTO", draws: lotoDraws },
+    { id: "LOTO_PLUS", draws: lotoPlusDraws },
+  ];
 
   let draws: typeof all;
-  let statGroups: DrawStatGroup[];
 
-  if (filter === "LOTO_VERT") {
-    draws = lotoVertDraws;
-    statGroups = [{ id: "LOTO_VERT", draws: lotoVertDraws }];
-  } else if (filter === "LOTO_FAMILY") {
-    draws = lotoFamilyDraws;
-    statGroups = [{ id: "LOTO_FAMILY", draws: lotoFamilyDraws }];
+  if (filter) {
+    draws = all.filter((d) => d.game === filter);
   } else {
-    draws = [...lotoVertDraws, ...lotoFamilyDraws].sort(
-      (a, b) => b.date.getTime() - a.date.getTime()
-    );
-    statGroups = [
-      { id: "LOTO_VERT", draws: lotoVertDraws },
-      { id: "LOTO_FAMILY", draws: lotoFamilyDraws },
-    ];
+    draws = all;
   }
 
-  return { draws, statGroups };
+  return { draws, statGroups: filter ? statGroups.filter((g) => g.id === filter) : statGroups };
 }
 
 export async function getDraws(game?: Game) {
   if (!game) {
     const { draws } = await getDrawsForPage();
     return draws;
-  }
-
-  if (game === "LOTO" || game === "LOTO_PLUS") {
-    const draws = await prisma.draw.findMany({
-      where: { game: { in: ["LOTO", "LOTO_PLUS"] } },
-      orderBy: { date: "desc" },
-    });
-    return deduplicateLotoFamilyDraws(draws);
   }
 
   return prisma.draw.findMany({
