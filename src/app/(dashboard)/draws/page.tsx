@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { getDrawsForPage } from "@/lib/actions/draws";
 import { analyzeDraws } from "@/lib/analysis";
 import {
@@ -37,11 +36,26 @@ const STAT_GROUP_META: Record<
 async function DrawsContent({
   gameFilter,
   page,
+  selectedDate,
 }: {
   gameFilter?: DrawFilter;
   page: number;
+  selectedDate?: string;
 }) {
-  const { draws, statGroups } = await getDrawsForPage(gameFilter);
+  const { draws: allDraws, statGroups } = await getDrawsForPage(gameFilter);
+
+  const availableDates = [
+    ...new Set(allDraws.map((d) => formatShortDate(d.date))),
+  ].sort((a, b) => b.localeCompare(a));
+
+  const validSelectedDate =
+    selectedDate && availableDates.includes(selectedDate)
+      ? selectedDate
+      : undefined;
+
+  const draws = validSelectedDate
+    ? allDraws.filter((d) => formatShortDate(d.date) === validSelectedDate)
+    : allDraws;
 
   const analysisCards = statGroups.map((group) => {
     const records = group.draws.map((d) => ({
@@ -70,12 +84,19 @@ async function DrawsContent({
   function buildHref(p: number) {
     const params = new URLSearchParams();
     if (gameFilter) params.set("game", gameFilter);
+    if (validSelectedDate) params.set("date", validSelectedDate);
     params.set("page", String(p));
     return `/draws?${params.toString()}`;
   }
 
   return (
     <>
+      <DrawsFilter
+        currentFilter={gameFilter}
+        availableDates={availableDates}
+        selectedDate={validSelectedDate}
+      />
+
       {gameFilter === "LOTO_FAMILY" && (
         <p className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
           Loto et Loto+ partagent les mêmes numéros tirés chaque mercredi et
@@ -155,6 +176,7 @@ async function DrawsContent({
           <CardDescription>
             {totalDraws} tirage(s)
             {gameFilter ? ` pour ${getDrawFilterLabel(gameFilter)}` : ""}
+            {validSelectedDate ? ` · ${validSelectedDate}` : ""}
             {totalPages > 1 && ` · Page ${safePage}/${totalPages}`}
           </CardDescription>
         </CardHeader>
@@ -228,11 +250,12 @@ async function DrawsContent({
 export default async function DrawsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ game?: string; page?: string }>;
+  searchParams: Promise<{ game?: string; page?: string; date?: string }>;
 }) {
   const params = await searchParams;
   const gameFilter = parseDrawFilter(params.game);
   const page = parseInt(params.page ?? "1", 10) || 1;
+  const selectedDate = params.date;
 
   return (
     <div className="space-y-6">
@@ -245,11 +268,11 @@ export default async function DrawsPage({
         </p>
       </div>
 
-      <Suspense fallback={<div>Chargement du filtre...</div>}>
-        <DrawsFilter currentFilter={gameFilter} />
-      </Suspense>
-
-      <DrawsContent gameFilter={gameFilter} page={page} />
+      <DrawsContent
+        gameFilter={gameFilter}
+        page={page}
+        selectedDate={selectedDate}
+      />
     </div>
   );
 }
