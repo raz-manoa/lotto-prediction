@@ -5,11 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-import { Select } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DRAW_FILTER_OPTIONS, parseDrawFilter, type DrawFilter } from "@/lib/games";
+import {
+  DRAW_FILTER_OPTIONS,
+  getGameColors,
+  parseDrawFilter,
+  type DrawFilter,
+} from "@/lib/games";
 
 type DrawsFilterProps = {
   currentFilter?: DrawFilter;
@@ -59,10 +63,10 @@ export function DrawsFilter({
     router.push(query ? `/draws?${query}` : "/draws");
   }
 
-  function handleGameChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  function handleGameChange(game?: DrawFilter) {
     const params = new URLSearchParams(searchParams.toString());
-    if (e.target.value) {
-      params.set("game", e.target.value);
+    if (game) {
+      params.set("game", game);
     } else {
       params.delete("game");
     }
@@ -92,19 +96,38 @@ export function DrawsFilter({
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <Select
-        value={currentFilter ?? ""}
-        onChange={handleGameChange}
-        className="w-full sm:max-w-xs"
-      >
-        <option value="">Tous les jeux</option>
-        {DRAW_FILTER_OPTIONS.map((g) => (
-          <option key={g.value} value={g.value}>
-            {g.label}
-          </option>
-        ))}
-      </Select>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => handleGameChange(undefined)}
+          className={cn(
+            "inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold transition-colors",
+            !currentFilter
+              ? "bg-gray-700 text-white"
+              : "text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-50"
+          )}
+        >
+          Tous
+        </button>
+        {DRAW_FILTER_OPTIONS.map((g) => {
+          const colors = getGameColors(g.value);
+          const isActive = currentFilter === g.value;
+          return (
+            <button
+              key={g.value}
+              type="button"
+              onClick={() => handleGameChange(g.value)}
+              className={cn(
+                "inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold transition-colors",
+                isActive ? colors.chipActive : colors.chipInactive
+              )}
+            >
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
 
       <div ref={containerRef} className="relative w-full sm:w-auto">
         <Button

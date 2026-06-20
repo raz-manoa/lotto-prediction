@@ -4,12 +4,12 @@ import {
   DRAW_FILTER_OPTIONS,
   getDrawFilterLabel,
   getDrawGroupLabel,
+  getGameColors,
   parseDrawFilter,
   type DrawFilter,
 } from "@/lib/games";
-import { formatShortDate } from "@/lib/utils";
+import { cn, formatShortDate } from "@/lib/utils";
 import { NumberBalls } from "@/components/number-grid";
-import { Badge } from "@/components/ui/select";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Card,
@@ -106,7 +106,7 @@ async function DrawsContent({
         }`}
       >
         {analysisCards.map(({ id, title, description, analysis }) => (
-          <Card key={id}>
+          <Card key={id} className={cn("border-l-4", getGameColors(id).accent)}>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">{title}</CardTitle>
               <CardDescription>
@@ -216,15 +216,20 @@ async function DrawsContent({
                     className="flex flex-wrap items-center justify-between gap-3 py-4"
                   >
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                          getGameColors(draw.game).badge
+                        )}
+                      >
                         {getDrawGroupLabel(draw.game)}
-                      </Badge>
+                      </span>
                       <span className="text-sm font-medium">
                         {formatShortDate(draw.date)}
                       </span>
                       <span className="text-xs text-gray-500">{draw.day}</span>
                     </div>
-                    <NumberBalls numbers={draw.numbers} />
+                    <NumberBalls numbers={draw.numbers} game={draw.game} />
                   </div>
                 ))}
               </div>

@@ -1,5 +1,13 @@
 import { Game } from "@prisma/client";
 
+export type GameColors = {
+  ball: string;
+  badge: string;
+  chipActive: string;
+  chipInactive: string;
+  accent: string;
+};
+
 export type GameConfig = {
   id: Game;
   name: string;
@@ -10,6 +18,7 @@ export type GameConfig = {
   drawDays: string[];
   tiers: { matches: number; label: string }[];
   ranges?: { label: string; min: number; max: number }[];
+  colors: GameColors;
 };
 
 export const GAMES: Record<Game, GameConfig> = {
@@ -32,6 +41,14 @@ export const GAMES: Record<Game, GameConfig> = {
       { label: "mid", min: 10, max: 19 },
       { label: "high", min: 20, max: 28 },
     ],
+    colors: {
+      ball: "bg-emerald-600",
+      badge: "bg-emerald-100 text-emerald-800",
+      chipActive: "bg-emerald-600 text-white",
+      chipInactive:
+        "text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-50",
+      accent: "border-emerald-500",
+    },
   },
   LOTO: {
     id: "LOTO",
@@ -52,6 +69,13 @@ export const GAMES: Record<Game, GameConfig> = {
       { label: "mid", min: 14, max: 27 },
       { label: "high", min: 28, max: 40 },
     ],
+    colors: {
+      ball: "bg-red-600",
+      badge: "bg-red-100 text-red-700",
+      chipActive: "bg-red-600 text-white",
+      chipInactive: "text-red-700 ring-1 ring-inset ring-red-200 hover:bg-red-50",
+      accent: "border-red-500",
+    },
   },
   LOTO_PLUS: {
     id: "LOTO_PLUS",
@@ -72,6 +96,14 @@ export const GAMES: Record<Game, GameConfig> = {
       { label: "mid", min: 14, max: 27 },
       { label: "high", min: 28, max: 40 },
     ],
+    colors: {
+      ball: "bg-blue-900",
+      badge: "bg-blue-100 text-blue-900 ring-1 ring-inset ring-red-300",
+      chipActive: "bg-blue-900 text-white",
+      chipInactive:
+        "text-blue-900 ring-1 ring-inset ring-blue-200 hover:bg-blue-50",
+      accent: "border-blue-900",
+    },
   },
 };
 
@@ -122,6 +154,10 @@ export function getDrawGroupLabel(game: Game): string {
 
 export function getGameConfig(game: Game): GameConfig {
   return GAMES[game];
+}
+
+export function getGameColors(game: Game): GameColors {
+  return GAMES[game].colors;
 }
 
 export function validateNumbers(

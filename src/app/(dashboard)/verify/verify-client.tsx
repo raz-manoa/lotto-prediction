@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Game } from "@prisma/client";
-import { GAMES, GAME_LIST } from "@/lib/games";
+import { GAMES, GAME_LIST, getGameColors } from "@/lib/games";
 import { NumberBalls } from "@/components/number-grid";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/select";
 import { verifyTicketsAgainstDraw } from "@/lib/actions/predictions";
+import { cn } from "@/lib/utils";
 
 type DrawOption = {
   id: string;
@@ -115,12 +116,23 @@ export function VerifyClient({ draws }: { draws: DrawOption[] }) {
           <Card>
             <CardHeader>
               <CardTitle>Résultat du tirage</CardTitle>
-              <CardDescription>
-                {GAMES[result.draw.game as Game].name} — {result.draw.date}
+              <CardDescription className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                    getGameColors(result.draw.game as Game).badge
+                  )}
+                >
+                  {GAMES[result.draw.game as Game].name}
+                </span>
+                <span>{result.draw.date}</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <NumberBalls numbers={result.draw.numbers} />
+              <NumberBalls
+                numbers={result.draw.numbers}
+                game={result.draw.game as Game}
+              />
             </CardContent>
           </Card>
 

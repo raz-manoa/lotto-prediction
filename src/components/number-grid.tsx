@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { getGameConfig } from "@/lib/games";
+import { getGameColors, getGameConfig } from "@/lib/games";
 import { Game } from "@prisma/client";
 
 type NumberGridProps = {
@@ -70,13 +70,24 @@ export function NumberGrid({
   );
 }
 
-export function NumberBalls({ numbers }: { numbers: number[] }) {
+export function NumberBalls({
+  numbers,
+  game,
+}: {
+  numbers: number[];
+  game?: Game;
+}) {
+  const ballColor = game ? getGameColors(game).ball : "bg-emerald-600";
+
   return (
     <div className="flex flex-wrap gap-1.5 sm:gap-2">
       {numbers.map((n) => (
         <span
           key={n}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white sm:h-9 sm:w-9 sm:text-sm"
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white sm:h-9 sm:w-9 sm:text-sm",
+            ballColor
+          )}
         >
           {n}
         </span>

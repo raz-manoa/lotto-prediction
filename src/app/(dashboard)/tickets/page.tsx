@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { getSavedTickets } from "@/lib/actions/predictions";
-import { GAMES } from "@/lib/games";
-import { formatShortDate } from "@/lib/utils";
+import { GAMES, getGameColors } from "@/lib/games";
+import { cn, formatShortDate } from "@/lib/utils";
 import { NumberBalls } from "@/components/number-grid";
 import { Badge } from "@/components/ui/select";
 import { Pagination } from "@/components/ui/pagination";
@@ -83,8 +83,16 @@ export default async function TicketsPage({
                   <CardHeader>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <CardTitle className="text-base sm:text-lg">
-                          Ticket {globalIndex} — {GAMES[ticket.prediction.game].name}
+                        <CardTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
+                          <span>Ticket {globalIndex}</span>
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                              getGameColors(ticket.prediction.game).badge
+                            )}
+                          >
+                            {GAMES[ticket.prediction.game].name}
+                          </span>
                         </CardTitle>
                         <CardDescription className="mt-0.5 text-xs sm:text-sm">
                           Créé le {formatShortDate(ticket.createdAt)}
@@ -97,7 +105,10 @@ export default async function TicketsPage({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <NumberBalls numbers={ticket.numbers} />
+                    <NumberBalls
+                      numbers={ticket.numbers}
+                      game={ticket.prediction.game}
+                    />
                     <p className="text-sm text-gray-600">{ticket.explanation}</p>
                     {ticket.results.length > 0 && (
                       <div className="rounded-md bg-gray-50 p-3 text-sm">
