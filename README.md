@@ -78,14 +78,20 @@ data/                 # Données historiques JSON
 - `/verify` — Vérifier les tickets contre un tirage réel
 - `/settings` — Configuration IA (modèle, clé API chiffrée)
 
-## Scraper (optionnel, fragile)
+## Scraper
+
+Importe les tirages depuis l'API AJAX de [Lottotech](https://www.lottotech.mu) (derniers N jours, jours de tirage uniquement).
 
 ```bash
-pnpm scrape -- --game=LOTO_VERT
-pnpm scrape -- --game=LOTO
+pnpm scrape -- --game=LOTO_VERT --days=90
+pnpm scrape -- --game=LOTO --days=90
+pnpm scrape -- --game=LOTO_PLUS --days=90
 ```
 
-Le scraper est best-effort — l'import manuel via `/draws/import` reste la méthode fiable.
+- `--game` : `LOTO_VERT` (défaut), `LOTO` ou `LOTO_PLUS`
+- `--days` : fenêtre en jours calendaires (défaut 90) ; seuls les jours de tirage sont interrogés
+
+Loto et Loto+ partagent la même page mais doivent être scrapés séparément. L'import manuel via `/draws/import` reste disponible en secours.
 
 ## Disclaimer
 
