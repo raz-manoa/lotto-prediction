@@ -113,52 +113,74 @@ async function DrawsContent({
                 {description} · {analysis.totalDraws} tirage(s)
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-medium text-emerald-700">Chauds:</span>
-                {analysis.hotNumbers.length > 0 ? (
-                  analysis.hotNumbers.map((n) => (
-                    <span
-                      key={n}
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800"
-                    >
-                      {n}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-gray-400">—</span>
-                )}
+            <CardContent className="space-y-3 text-sm">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-medium text-emerald-700">Chauds:</span>
+                  {analysis.hotNumbers.length > 0 ? (
+                    analysis.hotNumbers.map((n) => (
+                      <span
+                        key={n}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800"
+                      >
+                        {n}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </div>
+                <p className="text-xs leading-snug text-gray-500">
+                  Numéros sortis le plus souvent sur l&apos;ensemble des tirages
+                  analysés (les plus fréquents).
+                </p>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-medium text-blue-700">Froids:</span>
-                {analysis.coldNumbers.length > 0 ? (
-                  analysis.coldNumbers.map((n) => (
-                    <span
-                      key={n}
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-800"
-                    >
-                      {n}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-gray-400">—</span>
-                )}
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-medium text-blue-700">Froids:</span>
+                  {analysis.coldNumbers.length > 0 ? (
+                    analysis.coldNumbers.map((n) => (
+                      <span
+                        key={n}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-800"
+                      >
+                        {n}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </div>
+                <p className="text-xs leading-snug text-gray-500">
+                  Numéros sortis le moins souvent (les moins fréquents sur la
+                  période).
+                </p>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-medium text-amber-700">En retard:</span>
-                {analysis.overdueNumbers.length > 0 ? (
-                  analysis.overdueNumbers.map((n) => (
-                    <span
-                      key={n}
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800"
-                    >
-                      {n}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-gray-400">—</span>
-                )}
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-medium text-amber-700">En retard:</span>
+                  {analysis.overdueNumbers.length > 0 ? (
+                    analysis.overdueNumbers.map((n) => (
+                      <span
+                        key={n}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800"
+                      >
+                        {n}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </div>
+                <p className="text-xs leading-snug text-gray-500">
+                  Numéros qui ne sont plus sortis depuis longtemps (8 tirages ou
+                  plus), parfois dits « attendus ».
+                </p>
               </div>
+              <p className="border-t pt-2 text-[11px] leading-snug text-gray-400">
+                Indicateurs purement statistiques : chaque tirage reste
+                aléatoire et indépendant.
+              </p>
             </CardContent>
           </Card>
         ))}
