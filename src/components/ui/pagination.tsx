@@ -24,14 +24,14 @@ export function Pagination({ currentPage, totalPages, buildHref }: PaginationPro
       {hasPrev ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="flex h-9 items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="flex h-9 items-center gap-1 rounded-md bg-white px-3 text-sm font-medium text-gray-700 shadow-elevation-1 hover:shadow-elevation-2 hover:bg-gray-50 transition-all"
           aria-label="Page précédente"
         >
           <ChevronLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Précédent</span>
         </Link>
       ) : (
-        <span className="flex h-9 items-center gap-1 rounded-md border border-gray-100 bg-gray-50 px-3 text-sm font-medium text-gray-300 cursor-not-allowed">
+        <span className="flex h-9 items-center gap-1 rounded-md bg-gray-50 px-3 text-sm font-medium text-gray-300 cursor-not-allowed">
           <ChevronLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Précédent</span>
         </span>
@@ -51,7 +51,7 @@ export function Pagination({ currentPage, totalPages, buildHref }: PaginationPro
                 "flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors",
                 p === currentPage
                   ? "bg-emerald-600 text-white"
-                  : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                  : "bg-white text-gray-700 shadow-elevation-1 hover:shadow-elevation-2 hover:bg-gray-50"
               )}
               aria-current={p === currentPage ? "page" : undefined}
             >
@@ -64,14 +64,14 @@ export function Pagination({ currentPage, totalPages, buildHref }: PaginationPro
       {hasNext ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="flex h-9 items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="flex h-9 items-center gap-1 rounded-md bg-white px-3 text-sm font-medium text-gray-700 shadow-elevation-1 hover:shadow-elevation-2 hover:bg-gray-50 transition-all"
           aria-label="Page suivante"
         >
           <span className="hidden sm:inline">Suivant</span>
           <ChevronRight className="h-4 w-4" />
         </Link>
       ) : (
-        <span className="flex h-9 items-center gap-1 rounded-md border border-gray-100 bg-gray-50 px-3 text-sm font-medium text-gray-300 cursor-not-allowed">
+        <span className="flex h-9 items-center gap-1 rounded-md bg-gray-50 px-3 text-sm font-medium text-gray-300 cursor-not-allowed">
           <span className="hidden sm:inline">Suivant</span>
           <ChevronRight className="h-4 w-4" />
         </span>

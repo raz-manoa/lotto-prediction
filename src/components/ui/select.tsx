@@ -8,7 +8,7 @@ export function Select({
   return (
     <select
       className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-10 w-full rounded-md bg-background px-3 py-2 text-sm shadow-input ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -25,7 +25,7 @@ export function Textarea({
   return (
     <textarea
       className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex min-h-[80px] w-full rounded-md bg-background px-3 py-2 text-sm shadow-input ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -43,7 +43,7 @@ export function Badge({
   const variants = {
     default: "bg-emerald-600 text-white",
     secondary: "bg-gray-100 text-gray-800",
-    outline: "border border-gray-300 text-gray-700",
+    outline: "bg-white shadow-elevation-1 text-gray-700",
     success: "bg-green-100 text-green-800",
     warning: "bg-amber-100 text-amber-800",
   };

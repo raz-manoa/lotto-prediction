@@ -125,7 +125,7 @@ export function DrawsFilter({
         </Button>
 
         {open && (
-          <div className="absolute left-0 z-50 mt-2 rounded-md border bg-background p-0 shadow-md">
+          <div className="absolute left-0 z-50 mt-2 rounded-md bg-background p-0 shadow-elevation-3">
             <Calendar
               mode="single"
               selected={
@@ -141,7 +141,7 @@ export function DrawsFilter({
               className="rounded-md"
             />
             {selectedDate && (
-              <div className="border-t px-3 py-2">
+              <div className="px-3 py-2">
                 <button
                   type="button"
                   onClick={handleClearDate}

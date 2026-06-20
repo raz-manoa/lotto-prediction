@@ -57,7 +57,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 bg-white/95 shadow-navbar backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link href="/draws" className="text-lg font-bold text-emerald-700">
             Lotto MU
@@ -99,7 +99,7 @@ export function Navbar() {
 
       {/* Mobile bottom tab bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 border-t bg-white/95 backdrop-blur-sm md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 bg-white/95 shadow-navbar-up backdrop-blur-sm md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         aria-label="Navigation principale"
       >
@@ -180,7 +180,7 @@ export function Navbar() {
                       </li>
                     );
                   })}
-                  <li className="mt-1 border-t pt-1">
+                  <li className="mt-1 pt-1">
                     <button
                       onClick={() => {
                         setMoreOpen(false);

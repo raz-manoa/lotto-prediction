@@ -11,6 +11,13 @@
   --color-input: #e5e5e5;
   --color-ring: #059669;
   --font-sans: ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-elevation-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-elevation-2: 0 2px 4px rgba(16, 24, 40, 0.05), 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-elevation-3: 0 8px 16px rgba(16, 24, 40, 0.08), 0 12px 32px rgba(16, 24, 40, 0.12);
+  --shadow-input: inset 0 0 0 1px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-navbar: 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-navbar-up: 0 -1px 3px rgba(16, 24, 40, 0.08);
 }
 
 body {

@@ -116,16 +116,16 @@ export default function ImportDrawsPage() {
         </Select>
       </div>
 
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
         {(["form", "bulk", "json"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+            className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${
               tab === t
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white text-emerald-700 shadow-elevation-1"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {t === "form" ? "Formulaire" : t === "bulk" ? "Collage en masse" : "JSON"}
@@ -170,7 +170,7 @@ export default function ImportDrawsPage() {
                     setDate(selected ? format(selected, "yyyy-MM-dd") : "")
                   }
                   disabled={(day) => !isValidDrawDate(game, day)}
-                  className="rounded-md border w-fit"
+                  className="rounded-md shadow-elevation-1 w-fit"
                 />
               </div>
               <NumberGrid

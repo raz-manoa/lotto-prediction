@@ -151,7 +151,7 @@ export default function PredictPage() {
       {result && (
         <div className="space-y-6">
           {result.warning && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <div className="rounded-md bg-amber-50 p-4 text-sm text-amber-900 shadow-elevation-1">
               <p className="font-medium">Génération IA indisponible</p>
               <p className="mt-1">{result.warning}</p>
               <p className="mt-2 text-amber-800">

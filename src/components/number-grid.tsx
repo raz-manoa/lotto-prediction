@@ -58,7 +58,7 @@ export function NumberGrid({
                   ? "bg-emerald-600 text-white shadow-md scale-105"
                   : isFull
                     ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                    : "bg-gray-50 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-200"
+                    : "bg-gray-50 text-gray-700 shadow-elevation-1 hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-elevation-2"
               )}
             >
               {num}
