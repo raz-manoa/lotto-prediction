@@ -83,13 +83,23 @@ data/                 # Données historiques JSON
 Importe les tirages depuis l'API AJAX de [Lottotech](https://www.lottotech.mu) (derniers N jours, jours de tirage uniquement).
 
 ```bash
+# Import récent (N derniers jours calendaires)
 pnpm scrape -- --game=LOTO_VERT --days=90
 pnpm scrape -- --game=LOTO --days=90
 pnpm scrape -- --game=LOTO_PLUS --days=90
+
+# Backfill : N jours calendaires avant le tirage le plus ancien en base
+pnpm scrape -- --game=LOTO --days=90 --backfill
 ```
 
 - `--game` : `LOTO_VERT` (défaut), `LOTO` ou `LOTO_PLUS`
 - `--days` : fenêtre en jours calendaires (défaut 90) ; seuls les jours de tirage sont interrogés
+- `--backfill` : scrape les N jours **avant** le tirage le plus ancien déjà en base (relancer la même commande pour remonter plus loin ; arrêter quand `0 draw(s) imported`)
+
+**Workflow backfill :**
+1. `pnpm scrape -- --game=LOTO --days=90` — import récent
+2. `pnpm scrape -- --game=LOTO --days=90 --backfill` — 90 jours avant le plus ancien
+3. Relancer l'étape 2 jusqu'à `0 draw(s) imported`
 
 Loto et Loto+ partagent la même page mais doivent être scrapés séparément. L'import manuel via `/draws/import` reste disponible en secours.
 

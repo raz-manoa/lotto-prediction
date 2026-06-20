@@ -15,9 +15,13 @@ description: Runs the Lottotech lottery scraper to import Loto, Loto+ and Loto V
 Run one game at a time (default window: 90 days):
 
 ```bash
+# Recent import
 pnpm scrape -- --game=LOTO_VERT --days=90
 pnpm scrape -- --game=LOTO --days=90
 pnpm scrape -- --game=LOTO_PLUS --days=90
+
+# Backfill: N days before oldest draw in DB (re-run until 0 imports)
+pnpm scrape -- --game=LOTO --days=90 --backfill
 ```
 
 | Game | Flag | Numbers | Draw days |
@@ -29,6 +33,14 @@ pnpm scrape -- --game=LOTO_PLUS --days=90
 Loto and Loto+ share the same draw page but **must be scraped separately** with two commands.
 
 Adjust `--days` for a shorter or longer window (e.g. `--days=14` for recent draws only).
+
+### Backfill workflow
+
+1. Import recent: `pnpm scrape -- --game=LOTO --days=90`
+2. Backfill older: `pnpm scrape -- --game=LOTO --days=90 --backfill`
+3. Re-run step 2 until `0 draw(s) imported` (history exhausted)
+
+With `--backfill`, the script finds the oldest draw for the game in the database and scrapes the N calendar days before that date. If the database is empty, it falls back to recent import.
 
 ## Expected output
 
@@ -55,7 +67,8 @@ Numbers are embedded as HTML inside JSON (`.jackpot-number__digits` for Loto, `.
 
 | Symptom | Action |
 |---------|--------|
-| `0 draw(s) imported` | Increase `--days`, check network, verify DB is up |
+| `0 draw(s) imported` (recent) | Increase `--days`, check network, verify DB is up |
+| `0 draw(s) imported` (backfill) | History may be exhausted — re-run once to confirm, then stop |
 | HTTP error | Site may be down or blocking requests; retry later |
 | Validation skip | Numbers out of range — API HTML may have changed |
 | Prisma connection error | Start Postgres: `docker compose up -d` |

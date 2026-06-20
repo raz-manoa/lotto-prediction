@@ -1,7 +1,7 @@
 /**
  * Scraper for Lottotech lottery results via the WordPress admin-ajax API.
  *
- * Usage: pnpm scrape -- --game=LOTO_VERT|LOTO|LOTO_PLUS [--days=90]
+ * Usage: pnpm scrape -- --game=LOTO_VERT|LOTO|LOTO_PLUS [--days=90] [--backfill]
  */
 
 import * as cheerio from "cheerio";
@@ -88,7 +88,7 @@ type LotoVertAjaxResponse = {
   winning_number?: string;
 };
 
-function parseArgs(): { game: Game; days: number } {
+function parseArgs(): { game: Game; days: number; backfill: boolean } {
   const gameArg = process.argv.find((a) => a.startsWith("--game="));
   const game = gameArg?.split("=")[1] as Game | undefined;
   const daysArg = process.argv.find((a) => a.startsWith("--days="));
@@ -97,6 +97,7 @@ function parseArgs(): { game: Game; days: number } {
   return {
     game: game && Object.values(Game).includes(game) ? game : Game.LOTO_VERT,
     days: Number.isFinite(days) && days > 0 ? days : 90,
+    backfill: process.argv.includes("--backfill"),
   };
 }
 
@@ -118,6 +119,58 @@ function generateDrawDates(game: Game, days: number): Date[] {
   }
 
   return dates.sort((a, b) => a.getTime() - b.getTime());
+}
+
+function generateDrawDatesBefore(
+  game: Game,
+  beforeDate: Date,
+  days: number
+): Date[] {
+  const dates: Date[] = [];
+  const anchor = new Date(beforeDate);
+  anchor.setHours(12, 0, 0, 0);
+  anchor.setDate(anchor.getDate() - 1);
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date(anchor);
+    date.setDate(anchor.getDate() - i);
+    if (isValidDrawDate(game, date)) {
+      dates.push(date);
+    }
+  }
+
+  return dates.sort((a, b) => a.getTime() - b.getTime());
+}
+
+async function getOldestDrawDate(game: Game): Promise<Date | null> {
+  const draw = await prisma.draw.findFirst({
+    where: { game },
+    orderBy: { date: "asc" },
+  });
+  return draw?.date ?? null;
+}
+
+async function resolveDrawDates(
+  game: Game,
+  days: number,
+  backfill: boolean
+): Promise<Date[]> {
+  if (!backfill) {
+    return generateDrawDates(game, days);
+  }
+
+  const oldest = await getOldestDrawDate(game);
+  if (!oldest) {
+    console.log(
+      "No existing draws in database — falling back to recent import (last N days)."
+    );
+    return generateDrawDates(game, days);
+  }
+
+  console.log(
+    `Backfill: ${days} day(s) before oldest draw ${toIsoDate(oldest)}`
+  );
+  return generateDrawDatesBefore(game, oldest, days);
 }
 
 function parseEnglishPopupDate(text: string): string | null {
@@ -226,15 +279,12 @@ async function importDraw(
   });
 }
 
-async function scrapeLotoFamily(game: Game, days: number): Promise<number> {
+async function scrapeLotoFamily(game: Game, dates: Date[]): Promise<number> {
   const config = getGameConfig(game);
   const htmlField = game === Game.LOTO ? "loto_ball" : "lotoplus_ball";
-  const dates = generateDrawDates(game, days);
   let imported = 0;
 
-  console.log(
-    `Scraping ${game} via AJAX (${dates.length} draw day(s) in last ${days} days)...`
-  );
+  console.log(`Scraping ${game} via AJAX (${dates.length} draw day(s))...`);
 
   for (let i = 0; i < dates.length; i++) {
     const requestedDate = dates[i];
@@ -279,14 +329,11 @@ async function scrapeLotoFamily(game: Game, days: number): Promise<number> {
   return imported;
 }
 
-async function scrapeLotoVert(days: number): Promise<number> {
+async function scrapeLotoVert(dates: Date[]): Promise<number> {
   const config = getGameConfig(Game.LOTO_VERT);
-  const dates = generateDrawDates(Game.LOTO_VERT, days);
   let imported = 0;
 
-  console.log(
-    `Scraping LOTO_VERT via AJAX (${dates.length} draw day(s) in last ${days} days)...`
-  );
+  console.log(`Scraping LOTO_VERT via AJAX (${dates.length} draw day(s))...`);
 
   for (let i = 0; i < dates.length; i++) {
     const requestedDate = dates[i];
@@ -327,23 +374,30 @@ async function scrapeLotoVert(days: number): Promise<number> {
   return imported;
 }
 
-async function scrapeGame(game: Game, days: number): Promise<number> {
+async function scrapeGame(game: Game, dates: Date[]): Promise<number> {
   if (game === Game.LOTO_VERT) {
-    return scrapeLotoVert(days);
+    return scrapeLotoVert(dates);
   }
-  return scrapeLotoFamily(game, days);
+  return scrapeLotoFamily(game, dates);
 }
 
 async function main() {
-  const { game, days } = parseArgs();
+  const { game, days, backfill } = parseArgs();
 
   try {
-    const count = await scrapeGame(game, days);
+    const dates = await resolveDrawDates(game, days, backfill);
+    const count = await scrapeGame(game, dates);
 
     if (count === 0) {
-      console.warn(
-        "No draws imported. Check --days, connectivity, or use manual import at /draws/import."
-      );
+      if (backfill) {
+        console.warn(
+          "No draws in this backfill window — history may be exhausted. Re-run to confirm or stop."
+        );
+      } else {
+        console.warn(
+          "No draws imported. Check --days, connectivity, or use manual import at /draws/import."
+        );
+      }
     }
 
     console.log(`\nDone: ${count} draw(s) imported for ${game}`);
