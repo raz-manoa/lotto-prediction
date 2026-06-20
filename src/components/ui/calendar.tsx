@@ -51,7 +51,7 @@ function Calendar({
           "bg-emerald-600 text-white hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white",
         today: "bg-accent text-accent-foreground",
         outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+          "day-outside aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         disabled: "text-muted-foreground opacity-50 cursor-not-allowed",
         hidden: "invisible",
         ...classNames,
